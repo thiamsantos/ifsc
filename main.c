@@ -5,11 +5,11 @@
 #include <signal.h>
 #include <stdbool.h>
 
-void handleExit(int signo) {
+void handle_exit(int signo) {
     exit(0);
 }
 
-bool shouldKeepGoing() {
+bool should_keep_going() {
     char answer;
     printf("Deseja digitar um novo endereço? (S/N) ");
     scanf("%s", &answer);
@@ -21,26 +21,26 @@ bool shouldKeepGoing() {
     return false;
 }
 
-void calculateNetAddress(int *net, int ip[], int mask[]) {
+void calculate_net_address(int *net, int ip[], int mask[]) {
     int i;
     for (i = 0; i < 4; i++){
         net[i] = ip[i] & mask[i];
     }
 }
 
-void calculateWildcardMask(int *wildcard, int mask[]) {
+void calculate_wildcard_mask(int *wildcard, int mask[]) {
     int i;
     for (i = 0; i < 4; i++){
         wildcard[i] = 255 - mask[i];
     }
 }
 
-void getIP(int *ip) {
+void get_ip(int *ip) {
     printf("Digite o endereco IP: ");
     scanf("%d %*c %d %*c %d %*c %d", &ip[0], &ip[1], &ip[2], &ip[3]);
 }
 
-bool isMaskValid(int mask[]) {
+bool is_mask_valid(int mask[]) {
     int i;
 
     for (i = 0; i < 4; i++) {
@@ -53,12 +53,12 @@ bool isMaskValid(int mask[]) {
 }
 
 
-void getMask(int *mask) {
+void get_mask(int *mask) {
     while (true) {
         printf("Digite a máscara de sub-rede: ");
         scanf("%d %*c %d %*c %d %*c %d", &mask[0], &mask[1], &mask[2], &mask[3]);
 
-        if (isMaskValid(mask)) {
+        if (is_mask_valid(mask)) {
             break;
         } else {
             printf("Você digitou um valor invalido para máscara de rede.\nOs valores permitidos são: 0 | 128 | 192 | 224 | 240 | 248 | 252 | 254 | 255\n");
@@ -66,7 +66,7 @@ void getMask(int *mask) {
     }
 }
 
-void calculateBroadcast(int *broadcast, int net[], int mask[]) {
+void calculate_broadcast(int *broadcast, int net[], int mask[]) {
     int i;
     for (i = 0; i < 4; i++) {
         if (mask[i] < 255) {
@@ -80,7 +80,7 @@ void calculateBroadcast(int *broadcast, int net[], int mask[]) {
 }
 
 int main(int argc, char *argv[]) {
-    signal(SIGINT, handleExit);
+    signal(SIGINT, handle_exit);
     setlocale(LC_ALL, "Portuguese");
 
     int ipbin[4][8];
@@ -95,19 +95,19 @@ int main(int argc, char *argv[]) {
 
     while (true) {
         int ip[4];
-        getIP(ip);
+        get_ip(ip);
 
         int mask[4];
-        getMask(mask);
+        get_mask(mask);
 
         int net[4];
-        calculateNetAddress(net, ip, mask);
+        calculate_net_address(net, ip, mask);
 
         int wildcard[4];
-        calculateWildcardMask(wildcard, mask);
+        calculate_wildcard_mask(wildcard, mask);
 
         int broadcast[4];
-        calculateBroadcast(broadcast, net, mask);
+        calculate_broadcast(broadcast, net, mask);
 
         printf("\n\nO ip digitado em forma binária: \n");
         for(i = 0; i <= 3; i++) {
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
         printf("O endereço de broadcast da rede eh: %d.%d.%d.%d \n\n", broadcast[0], broadcast[1],  broadcast[2], broadcast[3] );
         printf("O gateway da rede eh: %d.%d.%d.%d \n\n", broadcast[0], broadcast[1],  broadcast[2], broadcast[3] - 1 );
 
-        if (!shouldKeepGoing()) {
+        if (!should_keep_going()) {
             break;
         }
     }
