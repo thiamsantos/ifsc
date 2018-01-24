@@ -2,12 +2,45 @@
 #include <stdlib.h>
 #include <math.h>
 #include <locale.h>
+#include <signal.h>
+#include <stdbool.h>
 
 int length(int intarray[]) {
     return sizeof(intarray) / sizeof(intarray[0]);
 }
 
+void handleExit(int signo) {
+    exit(0);
+}
+
+bool shouldKeepGoing() {
+    char answer;
+    printf("Deseja digitar um novo endereço? (S/N) ");
+    scanf("%s", &answer);
+
+    if (answer == 's' && answer == 'S') {
+        return true;
+    }
+
+    return false;
+}
+
+bool isMaskValid(int mask[]) {
+    int i;
+
+    for (i = 0; i < 4; i++) {
+        if (mask[i] != 0 && mask[i] != 128 && mask[i] != 192 && mask[i] != 224 && mask[i] != 240 && mask[i] != 248 && mask[i] != 252 && mask[i] != 254 && mask[i] != 255) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int main(int argc, char *argv[]) {
+    signal(SIGINT, handleExit);
+    setlocale(LC_ALL, "Portuguese");
+
     int ip[4], ipbin[4][8];
     int mask[4], maskbin[4][8];
     int net[4], netbin[4][8];
@@ -19,26 +52,19 @@ int main(int argc, char *argv[]) {
 
     int i, u, n;
     int resto;
-    char loop;
 
-    setlocale(LC_ALL, "Portuguese");
-
-    while (1) {
-        printf("\nDigite o endereco IP: ");
+    while (true) {
+        printf("Digite o endereco IP: ");
         scanf("%d %*c %d %*c %d %*c %d", &ip[0], &ip[1], &ip[2], &ip[3]);
 
-        digitarmascara:
-        printf("\nDigite a máscara de sub-rede: ");
-        scanf("%d %*c %d %*c %d %*c %d", &mask[0], &mask[1], &mask[2], &mask[3]);
+        while(true) {
+            printf("Digite a máscara de sub-rede: ");
+            scanf("%d %*c %d %*c %d %*c %d", &mask[0], &mask[1], &mask[2], &mask[3]);
 
-        for (i = 0; i < length(mask); i++) {
-            if (mask[i]==0  || mask[i]==128 || mask[i]==192 || mask[i]==224 || mask[i]==240 || mask[i]==248 || mask[i]==252 || mask[i]==254 || mask[i]==255) {
-                i++;
-                i--;
+            if (isMaskValid(mask)) {
+                break;
             } else {
-                printf("\nVocê digitou um valor invalido para máscara de rede.\nOs valores permitidos são: 0 | 128 | 192 | 224 | 240 | 248 | 252 | 254 | 255\n");
-                i = 3;
-                goto digitarmascara;
+                printf("Você digitou um valor invalido para máscara de rede.\nOs valores permitidos são: 0 | 128 | 192 | 224 | 240 | 248 | 252 | 254 | 255\n");
             }
         }
 
@@ -134,10 +160,7 @@ int main(int argc, char *argv[]) {
         printf("O endereço de broadcast da rede eh: %d.%d.%d.%d \n\n", bcast[0], bcast[1],  bcast[2], bcast[3] );
         printf("O gateway da rede eh: %d.%d.%d.%d \n\n", bcast[0], bcast[1],  bcast[2], bcast[3] - 1 );
 
-        printf("Deseja digitar um novo endereço? (S / N) ");
-        scanf("%s" , &loop);
-
-        if (loop != 's' && loop != 'S' ) {
+        if (!shouldKeepGoing()) {
             break;
         }
     }
