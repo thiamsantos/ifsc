@@ -66,6 +66,19 @@ void getMask(int *mask) {
     }
 }
 
+void calculateBroadcast(int *broadcast, int net[], int mask[]) {
+    int i;
+    for (i = 0; i < 4; i++) {
+        if (mask[i] < 255) {
+            broadcast[i] = net[i] - mask[i] + 255;
+        } else if (mask[i] == 255) {
+            broadcast[i] = net[i];
+        } else if (mask[i] == 0) {
+            broadcast[i] = 255;
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     signal(SIGINT, handleExit);
     setlocale(LC_ALL, "Portuguese");
@@ -73,7 +86,7 @@ int main(int argc, char *argv[]) {
     int ipbin[4][8];
     int maskbin[4][8];
     int netbin[4][8];
-    int bcast[4], bcastbin[4][8];
+    int broadcastbin[4][8];
     int bitsrede, bitshosts, bits;
     int qtdeips, qtdehosts;
 
@@ -92,6 +105,9 @@ int main(int argc, char *argv[]) {
 
         int wildcard[4];
         calculateWildcardMask(wildcard, mask);
+
+        int broadcast[4];
+        calculateBroadcast(broadcast, net, mask);
 
         printf("\n\nO ip digitado em forma binária: \n");
         for(i = 0; i <= 3; i++) {
@@ -141,7 +157,7 @@ int main(int argc, char *argv[]) {
         }
 
         bitshosts = 32 - bitsrede;
-        qtdehosts = (pow(2,bitshosts)) - 2;
+        qtdehosts = pow(2, bitshosts) - 2;
 
         n = bitshosts;
         while (n>8) {
@@ -153,21 +169,6 @@ int main(int argc, char *argv[]) {
             qtdeips += (pow(2,n)) - 1;
         }
 
-        for (i=3 ; i>= 0 ; i--) {
-            if (mask[i] < 255) {
-                u = 255 - mask[i];
-                bcast[i] = net[i] + u;
-            }
-
-            if (mask[i] == 255) {
-                bcast[i] = net[i];
-            }
-
-            if (mask[i] == 0) {
-                bcast[i] = 255;
-            }
-        }
-
         printf("\nA rede usa %d bits \n\n", bitsrede);
         printf("Quantidade de bits para hosts: %d \n\n", bitshosts);
         printf("Soma da quantidade de IPs disponiveis em cada octeto: %d \n\n", qtdeips);
@@ -175,9 +176,9 @@ int main(int argc, char *argv[]) {
         printf("Endereco da rede: %d.%d.%d.%d\n\n", net[0], net[1], net[2], net[3]);
         printf("Endereco de Wildcard: %d.%d.%d.%d\n\n", wildcard[0], wildcard[1], wildcard[2], wildcard[3]);
         printf("O primeiro IP disponivel na faixa eh: %d.%d.%d.%d\n\n", net[0], net[1],  net[2], (net[3] + 1) );
-        printf("O último IP disponivel na faixa eh: %d.%d.%d.%d\n\n", bcast[0], bcast[1],  bcast[2], bcast[3] -1 );
-        printf("O endereço de broadcast da rede eh: %d.%d.%d.%d \n\n", bcast[0], bcast[1],  bcast[2], bcast[3] );
-        printf("O gateway da rede eh: %d.%d.%d.%d \n\n", bcast[0], bcast[1],  bcast[2], bcast[3] - 1 );
+        printf("O último IP disponivel na faixa eh: %d.%d.%d.%d\n\n", broadcast[0], broadcast[1],  broadcast[2], broadcast[3] -1 );
+        printf("O endereço de broadcast da rede eh: %d.%d.%d.%d \n\n", broadcast[0], broadcast[1],  broadcast[2], broadcast[3] );
+        printf("O gateway da rede eh: %d.%d.%d.%d \n\n", broadcast[0], broadcast[1],  broadcast[2], broadcast[3] - 1 );
 
         if (!shouldKeepGoing()) {
             break;
