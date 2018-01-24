@@ -5,10 +5,6 @@
 #include <signal.h>
 #include <stdbool.h>
 
-int length(int intarray[]) {
-    return sizeof(intarray) / sizeof(intarray[0]);
-}
-
 void handleExit(int signo) {
     exit(0);
 }
@@ -25,6 +21,25 @@ bool shouldKeepGoing() {
     return false;
 }
 
+void calculateNetAddress(int *net, int ip[], int mask[]) {
+    int i;
+    for (i = 0; i < 4; i++){
+        net[i] = ip[i] & mask[i];
+    }
+}
+
+void calculateWildcardMask(int *wildcard, int mask[]) {
+    int i;
+    for (i = 0; i < 4; i++){
+        wildcard[i] = 255 - mask[i];
+    }
+}
+
+void getIP(int *ip) {
+    printf("Digite o endereco IP: ");
+    scanf("%d %*c %d %*c %d %*c %d", &ip[0], &ip[1], &ip[2], &ip[3]);
+}
+
 bool isMaskValid(int mask[]) {
     int i;
 
@@ -37,16 +52,28 @@ bool isMaskValid(int mask[]) {
     return true;
 }
 
+
+void getMask(int *mask) {
+    while (true) {
+        printf("Digite a máscara de sub-rede: ");
+        scanf("%d %*c %d %*c %d %*c %d", &mask[0], &mask[1], &mask[2], &mask[3]);
+
+        if (isMaskValid(mask)) {
+            break;
+        } else {
+            printf("Você digitou um valor invalido para máscara de rede.\nOs valores permitidos são: 0 | 128 | 192 | 224 | 240 | 248 | 252 | 254 | 255\n");
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     signal(SIGINT, handleExit);
     setlocale(LC_ALL, "Portuguese");
 
-    int ip[4], ipbin[4][8];
-    int mask[4], maskbin[4][8];
-    int net[4], netbin[4][8];
+    int ipbin[4][8];
+    int maskbin[4][8];
+    int netbin[4][8];
     int bcast[4], bcastbin[4][8];
-    int wildcard[4];
-
     int bitsrede, bitshosts, bits;
     int qtdeips, qtdehosts;
 
@@ -54,27 +81,17 @@ int main(int argc, char *argv[]) {
     int resto;
 
     while (true) {
-        printf("Digite o endereco IP: ");
-        scanf("%d %*c %d %*c %d %*c %d", &ip[0], &ip[1], &ip[2], &ip[3]);
+        int ip[4];
+        getIP(ip);
 
-        while(true) {
-            printf("Digite a máscara de sub-rede: ");
-            scanf("%d %*c %d %*c %d %*c %d", &mask[0], &mask[1], &mask[2], &mask[3]);
+        int mask[4];
+        getMask(mask);
 
-            if (isMaskValid(mask)) {
-                break;
-            } else {
-                printf("Você digitou um valor invalido para máscara de rede.\nOs valores permitidos são: 0 | 128 | 192 | 224 | 240 | 248 | 252 | 254 | 255\n");
-            }
-        }
+        int net[4];
+        calculateNetAddress(net, ip, mask);
 
-        for (i=3 ; i>=0 ; i--) {
-            net[i] = ip[i] & mask[i];
-        }
-
-        for (i=3 ; i>=0 ; i--) {
-            wildcard[i] = 255 - mask[i];
-        }
+        int wildcard[4];
+        calculateWildcardMask(wildcard, mask);
 
         printf("\n\nO ip digitado em forma binária: \n");
         for(i = 0; i <= 3; i++) {
@@ -85,9 +102,11 @@ int main(int argc, char *argv[]) {
                 ipbin[i][u] = resto;
                 printf("%d", ipbin[i][u]);
             }
-            if (i<30) {
+
+            if (i < 30) {
                 printf(".");
-        }    }
+            }
+        }
 
         printf("\n\n");
         printf("A máscara digitada em forma binária: \n");
