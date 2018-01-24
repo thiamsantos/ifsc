@@ -15,17 +15,16 @@ int main(int argc, char *argv[]) {
 
     int i, u, n;
     int resto;
-    char p;
 
     setlocale(LC_ALL, "Portuguese");
 
     inputdados:
     printf("\nDigite o endereco IP: ");
-    scanf("%d %c %d %c %d %c %d", &ip[0], &p, &ip[1], &p, &ip[2], &p, &ip[3]);
+    scanf("%d %*c %d %*c %d %*c %d", &ip[0], &ip[1], &ip[2], &ip[3]);
 
     digitarmascara:
     printf("\nDigite a máscara de sub-rede: ");
-    scanf("%d %c %d %c %d %c %d", &mask[0], &p, &mask[1], &p, &mask[2], &p, &mask[3]);
+    scanf("%d %*c %d %*c %d %*c %d", &mask[0], &mask[1], &mask[2], &mask[3]);
 
     for (i=3; i>=0; --i) {
         if (mask[i]==0  || mask[i]==128 || mask[i]==192 || mask[i]==224 || mask[i]==240 || mask[i]==248 || mask[i]==252 || mask[i]==254 || mask[i]==255) {
@@ -123,12 +122,12 @@ int main(int argc, char *argv[]) {
     printf("Quantidade de bits para hosts: %d \n\n", bitshosts);
     printf("Soma da quantidade de IPs disponiveis em cada octeto: %d \n\n", qtdeips);
     printf("Quantidade de hosts (2n - 2): %d \n\n", qtdehosts);
-    printf("Endereco da rede: %d %c %d %c %d %c %d\n\n", net[0], p, net[1], p, net[2], p, net[3]);
-    printf("Endereco de Wildcard: %d %c %d %c %d %c %d\n\n", wildcard[0], p, wildcard[1], p, wildcard[2], p, wildcard[3]);
-    printf("O primeiro IP disponivel na faixa eh: %d%c%d%c%d%c%d\n\n", net[0], p, net[1],  p, net[2], p, (net[3] + 1) );
-    printf("O último IP disponivel na faixa eh: %d%c%d%c%d%c%d\n\n", bcast[0], p, bcast[1],  p, bcast[2], p, bcast[3] -1 );
-    printf("O endereço de broadcast da rede eh: %d%c%d%c%d%c%d \n\n", bcast[0], p, bcast[1],  p, bcast[2], p, bcast[3] );
-    printf("O gateway da rede eh: %d%c%d%c%d%c%d \n\n", bcast[0], p, bcast[1],  p, bcast[2], p, bcast[3] - 1 );
+    printf("Endereco da rede: %d.%d.%d.%d\n\n", net[0], net[1], net[2], net[3]);
+    printf("Endereco de Wildcard: %d.%d.%d.%d\n\n", wildcard[0], wildcard[1], wildcard[2], wildcard[3]);
+    printf("O primeiro IP disponivel na faixa eh: %d.%d.%d.%d\n\n", net[0], net[1],  net[2], (net[3] + 1) );
+    printf("O último IP disponivel na faixa eh: %d.%d.%d.%d\n\n", bcast[0], bcast[1],  bcast[2], bcast[3] -1 );
+    printf("O endereço de broadcast da rede eh: %d.%d.%d.%d \n\n", bcast[0], bcast[1],  bcast[2], bcast[3] );
+    printf("O gateway da rede eh: %d.%d.%d.%d \n\n", bcast[0], bcast[1],  bcast[2], bcast[3] - 1 );
 
     char loop;
 
