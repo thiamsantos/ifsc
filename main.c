@@ -6,6 +6,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+typedef int Octets[4];
+typedef char Address[15];
+typedef int BinaryOctets[4][8];
+
 void handle_exit(int signo) {
     exit(0);
 }
@@ -15,20 +19,20 @@ bool should_keep_going() {
     printf("Deseja digitar um novo endereço? (S/N) ");
     scanf("%s", &answer);
 
-    if (answer == 's' && answer == 'S') {
+    if (answer == 's' || answer == 'S') {
         return true;
     }
 
     return false;
 }
 
-void calculate_net_address(int *net, int ip[], int mask[]) {
+void calculate_net_address(int *net, Octets ip, Octets mask) {
     for (int i = 0; i < 4; i++){
         net[i] = ip[i] & mask[i];
     }
 }
 
-void calculate_wildcard_mask(int *wildcard, int mask[]) {
+void calculate_wildcard_mask(int *wildcard, Octets mask) {
     for (int i = 0; i < 4; i++){
         wildcard[i] = 255 - mask[i];
     }
@@ -39,7 +43,7 @@ void get_ip(int *ip) {
     scanf("%d %*c %d %*c %d %*c %d", &ip[0], &ip[1], &ip[2], &ip[3]);
 }
 
-bool is_mask_valid(int mask[]) {
+bool is_mask_valid(Octets mask) {
     for (int i = 0; i < 4; i++) {
         if (mask[i] != 0 && mask[i] != 128 && mask[i] != 192 && mask[i] != 224 && mask[i] != 240 && mask[i] != 248 && mask[i] != 252 && mask[i] != 254 && mask[i] != 255) {
             return false;
@@ -62,7 +66,7 @@ void get_mask(int *mask) {
     }
 }
 
-void calculate_broadcast(int *broadcast, int net[], int mask[]) {
+void calculate_broadcast(int *broadcast, Octets net, Octets mask){
     for (int i = 0; i < 4; i++) {
         if (mask[i] < 255) {
             broadcast[i] = net[i] - mask[i] + 255;
@@ -74,7 +78,7 @@ void calculate_broadcast(int *broadcast, int net[], int mask[]) {
     }
 }
 
-void calculate_binary(int (*bin)[8], int octets[]) {
+void calculate_binary(int (*bin)[8], Octets octets) {
     for (int i = 0; i < 4; i++) {
         int current_octet = octets[i];
 
@@ -85,7 +89,7 @@ void calculate_binary(int (*bin)[8], int octets[]) {
     }
 }
 
-void print_binary(int binary[4][8]) {
+void print_binary(BinaryOctets binary) {
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 8; j++) {
             printf("%d", binary[i][j]);
@@ -97,31 +101,31 @@ void print_binary(int binary[4][8]) {
     }
 }
 
-void format_address(char *address, int octets[]) {
+void format_address(char *address, Octets octets) {
     sprintf(address, "%d.%d.%d.%d", octets[0], octets[1], octets[2], octets[3]);
 }
 
-void calculate_last_ip(int *last_ip, int broadcast[4]) {
+void calculate_last_ip(int *last_ip, Octets broadcast) {
     memcpy(last_ip, broadcast, sizeof(last_ip) * 4);
     last_ip[3] -= 1;
 }
 
-void calculate_firt_ip(int *first_ip, int net[4]) {
+void calculate_firt_ip(int *first_ip, Octets net) {
     memcpy(first_ip, net, sizeof(first_ip) * 4);
     first_ip[3] += 1;
 }
 
-int calculate_net_bits(int mask[4]) {
+int calculate_net_bits(Octets mask) {
     int net_bits = 0;
-    for (int i = 3; i>=0 ; i--) {
-        int u = mask[i];
-        if (u > 1) {
+    for (int i = 0; i < 4; i++) {
+        int current_value = mask[i];
+        if (current_value > 1) {
             int bits = 128;
-                while ( u > bits ) {
-                    net_bits += 1;
-                    u -= bits;
-                    bits -= bits/2;
-                }
+            while (current_value > bits) {
+                net_bits += 1;
+                current_value -= bits;
+                bits -= bits/2;
+            }
             net_bits += 1;
         }
     }
@@ -140,32 +144,33 @@ int calculate_hosts_amount(int hosts_bits) {
 int calculate_ips_amount(int hosts_bits) {
     int n = hosts_bits;
     int ips_amount = 0;
-    while (n>8) {
+
+    while (n > 8) {
         ips_amount += 256;
         n -= 8;
     }
 
-    if (n<=8 && n > 0) {
-        ips_amount += (pow(2,n)) - 1;
+    if (n <= 8 && n > 0) {
+        ips_amount += pow(2, n) - 1;
     }
 
 }
 
 void ip_calculator() {
-    int ip[4];
-    int mask[4];
-    int net[4];
-    int wildcard[4];
-    int broadcast[4];
-    int last_ip[4];
-    int first_ip[4];
-    int binary_ip[4][8];
-    int binary_mask[4][8];
-    char net_address[15];
-    char wildcard_address[15];
-    char broadcast_address[15];
-    char last_ip_address[15];
-    char first_ip_address[15];
+    Octets ip;
+    Octets mask;
+    Octets net;
+    Octets wildcard;
+    Octets broadcast;
+    Octets last_ip;
+    Octets first_ip;
+    BinaryOctets binary_ip;
+    BinaryOctets binary_mask;
+    Address net_address;
+    Address wildcard_address;
+    Address broadcast_address;
+    Address last_ip_address;
+    Address first_ip_address;
 
     get_ip(ip);
     get_mask(mask);
