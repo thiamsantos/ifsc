@@ -52,7 +52,6 @@ bool is_mask_valid(int mask[]) {
     return true;
 }
 
-
 void get_mask(int *mask) {
     while (true) {
         printf("Digite a máscara de sub-rede: ");
@@ -79,19 +78,41 @@ void calculate_broadcast(int *broadcast, int net[], int mask[]) {
     }
 }
 
+void calculate_binary(int (*bin)[8], int octets[]) {
+    int i;
+    int j;
+    for (i = 0; i < 4; i++) {
+        int current_octet = octets[i];
+
+        for (j = 7; j >= 0; j--) {
+            bin[i][j] = current_octet % 2;
+            current_octet /= 2;
+        }
+    }
+}
+
+char print_binary(int binary[4][8]) {
+    int i;
+    int j;
+    for (i = 0; i < 4; i++) {
+        for (j = 0; j < 8; j++) {
+            printf("%d", binary[i][j]);
+        }
+
+        if (i < 3) {
+            printf(".");
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     signal(SIGINT, handle_exit);
     setlocale(LC_ALL, "Portuguese");
 
-    int ipbin[4][8];
-    int maskbin[4][8];
-    int netbin[4][8];
-    int broadcastbin[4][8];
     int bitsrede, bitshosts, bits;
     int qtdeips, qtdehosts;
 
     int i, u, n;
-    int resto;
 
     while (true) {
         int ip[4];
@@ -109,36 +130,18 @@ int main(int argc, char *argv[]) {
         int broadcast[4];
         calculate_broadcast(broadcast, net, mask);
 
-        printf("\n\nO ip digitado em forma binária: \n");
-        for(i = 0; i <= 3; i++) {
-            n = ip[i];
-            for(u = 7; u >= 0; u--) {
-                resto = n % 2;
-                n /= 2;
-                ipbin[i][u] = resto;
-                printf("%d", ipbin[i][u]);
-            }
+        int binary_ip[4][8];
+        calculate_binary(binary_ip, ip);
 
-            if (i < 30) {
-                printf(".");
-            }
-        }
+        int binary_mask[4][8];
+        calculate_binary(binary_mask, mask);
+
+        printf("\n\nO ip digitado em forma binária: ");
+        print_binary(binary_ip);
 
         printf("\n\n");
-        printf("A máscara digitada em forma binária: \n");
-
-        for(i = 0; i <= 3; i++) {
-            n = mask[i];
-            for(u = 7; u >= 0; u--) {
-                resto = n % 2;
-                n /= 2;
-                maskbin[i][u] = resto;
-                printf("%d", maskbin[i][u]);
-            }
-            if (i<30) {
-                printf(".");
-            }
-        }
+        printf("A máscara digitada em forma binária: ");
+        print_binary(binary_mask);
 
         printf("\n\n");
 
