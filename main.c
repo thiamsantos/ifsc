@@ -111,103 +111,113 @@ void calculate_firt_ip(int *first_ip, int net[4]) {
     first_ip[3] += 1;
 }
 
+int calculate_net_bits(int mask[4]) {
+    int net_bits = 0;
+    for (int i = 3; i>=0 ; i--) {
+        int u = mask[i];
+        if (u > 1) {
+            int bits = 128;
+                while ( u > bits ) {
+                    net_bits += 1;
+                    u -= bits;
+                    bits -= bits/2;
+                }
+            net_bits += 1;
+        }
+    }
+
+    return net_bits;
+}
+
+int calculate_hosts_bits(int net_bits) {
+    return 32 - net_bits;
+}
+
+int calculate_hosts_amount(int hosts_bits) {
+    return pow(2, hosts_bits) - 2;
+}
+
+int calculate_ips_amount(int hosts_bits) {
+    int n = hosts_bits;
+    int ips_amount = 0;
+    while (n>8) {
+        ips_amount += 256;
+        n -= 8;
+    }
+
+    if (n<=8 && n > 0) {
+        ips_amount += (pow(2,n)) - 1;
+    }
+
+}
+
+void ip_calculator() {
+    int ip[4];
+    int mask[4];
+    int net[4];
+    int wildcard[4];
+    int broadcast[4];
+    int last_ip[4];
+    int first_ip[4];
+    int binary_ip[4][8];
+    int binary_mask[4][8];
+    char net_address[15];
+    char wildcard_address[15];
+    char broadcast_address[15];
+    char last_ip_address[15];
+    char first_ip_address[15];
+
+    get_ip(ip);
+    get_mask(mask);
+
+    calculate_net_address(net, ip, mask);
+    calculate_wildcard_mask(wildcard, mask);
+    calculate_broadcast(broadcast, net, mask);
+    calculate_last_ip(last_ip, broadcast);
+    calculate_firt_ip(first_ip, net);
+
+    calculate_binary(binary_ip, ip);
+    calculate_binary(binary_mask, mask);
+
+    format_address(net_address, net);
+    format_address(wildcard_address, wildcard);
+    format_address(broadcast_address, broadcast);
+    format_address(last_ip_address, last_ip);
+    format_address(first_ip_address, first_ip);
+
+    int net_bits = calculate_net_bits(mask);
+    int hosts_bits = calculate_hosts_bits(net_bits);
+    int hosts_amount = calculate_hosts_amount(hosts_bits);
+    int ips_amount = calculate_ips_amount(hosts_bits);
+
+    printf("\n");
+
+    printf("O ip digitado em forma binária: ");
+    print_binary(binary_ip);
+    printf("\n");
+
+    printf("A máscara digitada em forma binária: ");
+    print_binary(binary_mask);
+    printf("\n");
+
+    printf("A rede usa %d bits\n", net_bits);
+    printf("Quantidade de bits para hosts: %d\n", hosts_bits);
+    printf("Soma da quantidade de IPs disponiveis em cada octeto: %d\n", ips_amount);
+    printf("Quantidade de hosts (2n - 2): %d\n", hosts_amount);
+    printf("Endereco da rede: %s\n", net_address);
+    printf("Endereco de Wildcard: %s\n", wildcard_address);
+    printf("O primeiro IP disponivel na faixa eh: %s\n", first_ip_address);
+    printf("O último IP disponivel na faixa eh: %s\n", last_ip_address);
+    printf("O endereço de broadcast da rede eh: %s\n", broadcast_address);
+    printf("O gateway da rede eh: %s\n", last_ip_address);
+}
+
 int main(int argc, char *argv[]) {
     signal(SIGINT, handle_exit);
     setlocale(LC_ALL, "Portuguese");
 
-    int bitsrede, bitshosts, bits;
-    int qtdeips, qtdehosts;
-
     while (true) {
-        int ip[4];
-        get_ip(ip);
-
-        int mask[4];
-        get_mask(mask);
-
-        int net[4];
-        calculate_net_address(net, ip, mask);
-
-        int wildcard[4];
-        calculate_wildcard_mask(wildcard, mask);
-
-        int broadcast[4];
-        calculate_broadcast(broadcast, net, mask);
-
-        int last_ip[4];
-        calculate_last_ip(last_ip, broadcast);
-
-        int first_ip[4];
-        calculate_firt_ip(first_ip, net);
-
-        int binary_ip[4][8];
-        calculate_binary(binary_ip, ip);
-
-        int binary_mask[4][8];
-        calculate_binary(binary_mask, mask);
-
-        char net_address[15];
-        format_address(net_address, net);
-
-        char wildcard_address[15];
-        format_address(wildcard_address, wildcard);
-
-        char broadcast_address[15];
-        format_address(broadcast_address, broadcast);
-
-        char last_ip_address[15];
-        format_address(last_ip_address, last_ip);
-
-        char first_ip_address[15];
-        format_address(first_ip_address, first_ip);
-
-        bitsrede = 0;
-        for (int i = 3; i>=0 ; i--) {
-            int u = mask[i];
-            if (u > 1) {
-                bits = 128;
-                    while ( u > bits ) {
-                        bitsrede += 1;
-                        u -= bits;
-                        bits -= bits/2;
-                    }
-                bitsrede += 1;
-            }
-        }
-
-        bitshosts = 32 - bitsrede;
-        qtdehosts = pow(2, bitshosts) - 2;
-
-        int n = bitshosts;
-        while (n>8) {
-            qtdeips += 256;
-            n -= 8;
-        }
-
-        if (n<=8 && n > 0) {
-            qtdeips += (pow(2,n)) - 1;
-        }
-
-        printf("\n");
-
-        printf("O ip digitado em forma binária: ");
-        print_binary(binary_ip);
-        printf("\n");
-
-        printf("A máscara digitada em forma binária: ");
-        print_binary(binary_mask);
-        printf("\n");
-
-        printf("A rede usa %d bits\n", bitsrede);
-        printf("Quantidade de bits para hosts: %d\n", bitshosts);
-        printf("Soma da quantidade de IPs disponiveis em cada octeto: %d\n", qtdeips);
-        printf("Quantidade de hosts (2n - 2): %d\n", qtdehosts);
-        printf("Endereco da rede: %s\n", net_address);
-        printf("Endereco de Wildcard: %s\n", wildcard_address);
-        printf("O primeiro IP disponivel na faixa eh: %s\n", first_ip_address);
-        printf("O último IP disponivel na faixa eh: %s\n", last_ip_address);
-        printf("O endereço de broadcast da rede eh: %s\n", broadcast_address);
-        printf("O gateway da rede eh: %s\n", last_ip_address);
+        ip_calculator();
 
         if (!should_keep_going()) {
             break;
